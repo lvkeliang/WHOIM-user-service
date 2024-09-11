@@ -354,11 +354,11 @@ type UserService interface {
 
 	Login(ctx context.Context, username string, password string) (r string, err error)
 
-	GetUserInfo(ctx context.Context, username string) (r *User, err error)
+	GetUserInfo(ctx context.Context, id string) (r *User, err error)
 
-	SetUserOnline(ctx context.Context, username string) (r bool, err error)
+	SetUserOnline(ctx context.Context, id string) (r bool, err error)
 
-	SetUserOffline(ctx context.Context, username string) (r bool, err error)
+	SetUserOffline(ctx context.Context, id string) (r bool, err error)
 }
 
 type UserServiceRegisterArgs struct {
@@ -1223,7 +1223,7 @@ func (p *UserServiceLoginResult) Field0DeepEqual(src *string) bool {
 }
 
 type UserServiceGetUserInfoArgs struct {
-	Username string `thrift:"username,1" frugal:"1,default,string" json:"username"`
+	Id string `thrift:"id,1" frugal:"1,default,string" json:"id"`
 }
 
 func NewUserServiceGetUserInfoArgs() *UserServiceGetUserInfoArgs {
@@ -1233,15 +1233,15 @@ func NewUserServiceGetUserInfoArgs() *UserServiceGetUserInfoArgs {
 func (p *UserServiceGetUserInfoArgs) InitDefault() {
 }
 
-func (p *UserServiceGetUserInfoArgs) GetUsername() (v string) {
-	return p.Username
+func (p *UserServiceGetUserInfoArgs) GetId() (v string) {
+	return p.Id
 }
-func (p *UserServiceGetUserInfoArgs) SetUsername(val string) {
-	p.Username = val
+func (p *UserServiceGetUserInfoArgs) SetId(val string) {
+	p.Id = val
 }
 
 var fieldIDToName_UserServiceGetUserInfoArgs = map[int16]string{
-	1: "username",
+	1: "id",
 }
 
 func (p *UserServiceGetUserInfoArgs) Read(iprot thrift.TProtocol) (err error) {
@@ -1308,7 +1308,7 @@ func (p *UserServiceGetUserInfoArgs) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Username = _field
+	p.Id = _field
 	return nil
 }
 
@@ -1341,10 +1341,10 @@ WriteStructEndError:
 }
 
 func (p *UserServiceGetUserInfoArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("username", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Username); err != nil {
+	if err := oprot.WriteString(p.Id); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1371,7 +1371,7 @@ func (p *UserServiceGetUserInfoArgs) DeepEqual(ano *UserServiceGetUserInfoArgs) 
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.Username) {
+	if !p.Field1DeepEqual(ano.Id) {
 		return false
 	}
 	return true
@@ -1379,7 +1379,7 @@ func (p *UserServiceGetUserInfoArgs) DeepEqual(ano *UserServiceGetUserInfoArgs) 
 
 func (p *UserServiceGetUserInfoArgs) Field1DeepEqual(src string) bool {
 
-	if strings.Compare(p.Username, src) != 0 {
+	if strings.Compare(p.Id, src) != 0 {
 		return false
 	}
 	return true
@@ -1557,7 +1557,7 @@ func (p *UserServiceGetUserInfoResult) Field0DeepEqual(src *User) bool {
 }
 
 type UserServiceSetUserOnlineArgs struct {
-	Username string `thrift:"username,1" frugal:"1,default,string" json:"username"`
+	Id string `thrift:"id,1" frugal:"1,default,string" json:"id"`
 }
 
 func NewUserServiceSetUserOnlineArgs() *UserServiceSetUserOnlineArgs {
@@ -1567,15 +1567,15 @@ func NewUserServiceSetUserOnlineArgs() *UserServiceSetUserOnlineArgs {
 func (p *UserServiceSetUserOnlineArgs) InitDefault() {
 }
 
-func (p *UserServiceSetUserOnlineArgs) GetUsername() (v string) {
-	return p.Username
+func (p *UserServiceSetUserOnlineArgs) GetId() (v string) {
+	return p.Id
 }
-func (p *UserServiceSetUserOnlineArgs) SetUsername(val string) {
-	p.Username = val
+func (p *UserServiceSetUserOnlineArgs) SetId(val string) {
+	p.Id = val
 }
 
 var fieldIDToName_UserServiceSetUserOnlineArgs = map[int16]string{
-	1: "username",
+	1: "id",
 }
 
 func (p *UserServiceSetUserOnlineArgs) Read(iprot thrift.TProtocol) (err error) {
@@ -1642,7 +1642,7 @@ func (p *UserServiceSetUserOnlineArgs) ReadField1(iprot thrift.TProtocol) error 
 	} else {
 		_field = v
 	}
-	p.Username = _field
+	p.Id = _field
 	return nil
 }
 
@@ -1675,10 +1675,10 @@ WriteStructEndError:
 }
 
 func (p *UserServiceSetUserOnlineArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("username", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Username); err != nil {
+	if err := oprot.WriteString(p.Id); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1705,7 +1705,7 @@ func (p *UserServiceSetUserOnlineArgs) DeepEqual(ano *UserServiceSetUserOnlineAr
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.Username) {
+	if !p.Field1DeepEqual(ano.Id) {
 		return false
 	}
 	return true
@@ -1713,7 +1713,7 @@ func (p *UserServiceSetUserOnlineArgs) DeepEqual(ano *UserServiceSetUserOnlineAr
 
 func (p *UserServiceSetUserOnlineArgs) Field1DeepEqual(src string) bool {
 
-	if strings.Compare(p.Username, src) != 0 {
+	if strings.Compare(p.Id, src) != 0 {
 		return false
 	}
 	return true
@@ -1899,7 +1899,7 @@ func (p *UserServiceSetUserOnlineResult) Field0DeepEqual(src *bool) bool {
 }
 
 type UserServiceSetUserOfflineArgs struct {
-	Username string `thrift:"username,1" frugal:"1,default,string" json:"username"`
+	Id string `thrift:"id,1" frugal:"1,default,string" json:"id"`
 }
 
 func NewUserServiceSetUserOfflineArgs() *UserServiceSetUserOfflineArgs {
@@ -1909,15 +1909,15 @@ func NewUserServiceSetUserOfflineArgs() *UserServiceSetUserOfflineArgs {
 func (p *UserServiceSetUserOfflineArgs) InitDefault() {
 }
 
-func (p *UserServiceSetUserOfflineArgs) GetUsername() (v string) {
-	return p.Username
+func (p *UserServiceSetUserOfflineArgs) GetId() (v string) {
+	return p.Id
 }
-func (p *UserServiceSetUserOfflineArgs) SetUsername(val string) {
-	p.Username = val
+func (p *UserServiceSetUserOfflineArgs) SetId(val string) {
+	p.Id = val
 }
 
 var fieldIDToName_UserServiceSetUserOfflineArgs = map[int16]string{
-	1: "username",
+	1: "id",
 }
 
 func (p *UserServiceSetUserOfflineArgs) Read(iprot thrift.TProtocol) (err error) {
@@ -1984,7 +1984,7 @@ func (p *UserServiceSetUserOfflineArgs) ReadField1(iprot thrift.TProtocol) error
 	} else {
 		_field = v
 	}
-	p.Username = _field
+	p.Id = _field
 	return nil
 }
 
@@ -2017,10 +2017,10 @@ WriteStructEndError:
 }
 
 func (p *UserServiceSetUserOfflineArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("username", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Username); err != nil {
+	if err := oprot.WriteString(p.Id); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2047,7 +2047,7 @@ func (p *UserServiceSetUserOfflineArgs) DeepEqual(ano *UserServiceSetUserOffline
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.Username) {
+	if !p.Field1DeepEqual(ano.Id) {
 		return false
 	}
 	return true
@@ -2055,7 +2055,7 @@ func (p *UserServiceSetUserOfflineArgs) DeepEqual(ano *UserServiceSetUserOffline
 
 func (p *UserServiceSetUserOfflineArgs) Field1DeepEqual(src string) bool {
 
-	if strings.Compare(p.Username, src) != 0 {
+	if strings.Compare(p.Id, src) != 0 {
 		return false
 	}
 	return true

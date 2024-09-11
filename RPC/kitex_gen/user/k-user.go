@@ -845,7 +845,7 @@ func (p *UserServiceGetUserInfoArgs) FastReadField1(buf []byte) (int, error) {
 		offset += l
 		_field = v
 	}
-	p.Username = _field
+	p.Id = _field
 	return offset, nil
 }
 
@@ -875,14 +875,14 @@ func (p *UserServiceGetUserInfoArgs) BLength() int {
 func (p *UserServiceGetUserInfoArgs) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 1)
-	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Username)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Id)
 	return offset
 }
 
 func (p *UserServiceGetUserInfoArgs) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
-	l += thrift.Binary.StringLengthNocopy(p.Username)
+	l += thrift.Binary.StringLengthNocopy(p.Id)
 	return l
 }
 
@@ -1045,7 +1045,7 @@ func (p *UserServiceSetUserOnlineArgs) FastReadField1(buf []byte) (int, error) {
 		offset += l
 		_field = v
 	}
-	p.Username = _field
+	p.Id = _field
 	return offset, nil
 }
 
@@ -1075,14 +1075,14 @@ func (p *UserServiceSetUserOnlineArgs) BLength() int {
 func (p *UserServiceSetUserOnlineArgs) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 1)
-	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Username)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Id)
 	return offset
 }
 
 func (p *UserServiceSetUserOnlineArgs) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
-	l += thrift.Binary.StringLengthNocopy(p.Username)
+	l += thrift.Binary.StringLengthNocopy(p.Id)
 	return l
 }
 
@@ -1247,7 +1247,7 @@ func (p *UserServiceSetUserOfflineArgs) FastReadField1(buf []byte) (int, error) 
 		offset += l
 		_field = v
 	}
-	p.Username = _field
+	p.Id = _field
 	return offset, nil
 }
 
@@ -1277,14 +1277,14 @@ func (p *UserServiceSetUserOfflineArgs) BLength() int {
 func (p *UserServiceSetUserOfflineArgs) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 1)
-	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Username)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Id)
 	return offset
 }
 
 func (p *UserServiceSetUserOfflineArgs) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
-	l += thrift.Binary.StringLengthNocopy(p.Username)
+	l += thrift.Binary.StringLengthNocopy(p.Id)
 	return l
 }
 
@@ -1408,7 +1408,7 @@ func (p *UserServiceLoginResult) GetResult() interface{} {
 }
 
 func (p *UserServiceGetUserInfoArgs) GetFirstArgument() interface{} {
-	return p.Username
+	return p.Id
 }
 
 func (p *UserServiceGetUserInfoResult) GetResult() interface{} {
@@ -1416,7 +1416,7 @@ func (p *UserServiceGetUserInfoResult) GetResult() interface{} {
 }
 
 func (p *UserServiceSetUserOnlineArgs) GetFirstArgument() interface{} {
-	return p.Username
+	return p.Id
 }
 
 func (p *UserServiceSetUserOnlineResult) GetResult() interface{} {
@@ -1424,7 +1424,7 @@ func (p *UserServiceSetUserOnlineResult) GetResult() interface{} {
 }
 
 func (p *UserServiceSetUserOfflineArgs) GetFirstArgument() interface{} {
-	return p.Username
+	return p.Id
 }
 
 func (p *UserServiceSetUserOfflineResult) GetResult() interface{} {

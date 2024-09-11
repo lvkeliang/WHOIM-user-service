@@ -7,15 +7,18 @@ import (
 
 var jwtKey = []byte("your_secret_key")
 
+// Claims 结构体，包括用户 ID 和用户名
 type Claims struct {
+	UserID   string `json:"user_id"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
-// 生成 JWT
-func GenerateJWT(username string) (string, error) {
+// 生成 JWT，包含用户 ID 和用户名
+func GenerateJWT(userID, username string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
+		UserID:   userID,
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
@@ -26,7 +29,7 @@ func GenerateJWT(username string) (string, error) {
 	return token.SignedString(jwtKey)
 }
 
-// 验证 JWT
+// 验证 JWT，并提取用户 ID 和用户名
 func ValidateJWT(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 

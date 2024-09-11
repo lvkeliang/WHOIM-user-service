@@ -1,16 +1,22 @@
 package models
 
 import (
+	"context"
+	"fmt"
 	"github.com/gocql/gocql"
 	"github.com/lvkeliang/WHOIM-user-service/db"
+	"github.com/lvkeliang/WHOIM-user-service/utils"
 	"github.com/scylladb/gocqlx/v2/qb"
 	"github.com/scylladb/gocqlx/v2/table"
+	"log"
 	"time"
 )
 
+var ctx = context.Background()
+
 var userTable = table.Metadata{
 	Name:    "users",
-	Columns: []string{"id", "username", "password_hash", "email", "status", "created_at", "updated_at"},
+	Columns: []string{"id", "username", "password_hash", "email", "created_at", "updated_at"},
 	PartKey: []string{"id"},
 }
 
@@ -21,7 +27,6 @@ type User struct {
 	Username     string
 	PasswordHash string
 	Email        string
-	Status       string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -76,20 +81,58 @@ func GetUserByID(userID string) (*User, error) {
 	return &user, nil
 }
 
-// UpdateStatus 更新用户状态
-func (u *User) UpdateStatus(status string) error {
-	session := db.GetSession()
+// SetUserStatus 设置用户在线或离线状态，使用 Redis Bitmap
+func SetUserStatus(userID string, status string) error {
+	// 将 UUID 转换为整数，用于 Bitmap 的偏移量
+	idInt, err := utils.UUIDToInt(userID)
+	if err != nil {
+		log.Println("Failed to convert userID:", err)
+		return err
+	}
 
-	u.Status = status
-	u.UpdatedAt = time.Now()
+	redisClient := db.GetRedisClient()
 
-	stmt, names := qb.Update(userTable.Name).
-		Set("status", "updated_at").
-		Where(qb.Eq("username")).ToCql()
+	// 设置用户的在线/离线状态到 Redis Bitmap
+	if status == "online" {
+		err = redisClient.SetBit(ctx, "user:status", idInt, 1).Err()
+		if err != nil {
+			log.Println("Failed to set user online status in Redis:", err)
+			return err
+		}
+	} else {
+		err = redisClient.SetBit(ctx, "user:status", idInt, 0).Err()
+		if err != nil {
+			log.Println("Failed to set user offline status in Redis:", err)
+			return err
+		}
+	}
 
-	// 执行更新操作
-	queryx := session.Query(stmt, names).BindStruct(u)
-	defer queryx.Release()
+	log.Printf("User %s status set to %s", userID, status)
+	return nil
+}
 
-	return queryx.Exec()
+// GetUserStatus 从 Redis 获取用户在线状态
+func GetUserStatus(userID string) (string, error) {
+	// 将 UUID 转换为整数
+	idInt, err := utils.UUIDToInt(userID)
+	if err != nil {
+		log.Println("Failed to convert userID:", err)
+		return "", err
+	}
+
+	fmt.Println("UUIDINT: ", idInt)
+
+	redisClient := db.GetRedisClient()
+
+	// 从 Redis Bitmap 中获取用户的在线状态
+	status, err := redisClient.GetBit(ctx, "user:status", idInt).Result()
+	if err != nil {
+		log.Println("Failed to get user status from Redis:", err)
+		return "", err
+	}
+
+	if status == 1 {
+		return "online", nil
+	}
+	return "offline", nil
 }

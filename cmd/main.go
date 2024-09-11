@@ -18,6 +18,11 @@ func main() {
 		log.Fatalf("Failed to initialize Cassandra: %v", err)
 	}
 
+	// 初始化 Redis
+	if err := db.InitRedis(); err != nil {
+		log.Fatalf("Failed to initialize Redis: %v", err)
+	}
+
 	// 初始化 etcd 注册中心
 	r, err := etcd.NewEtcdRegistry([]string{"127.0.0.1:2379"}) // etcd 地址
 	if err != nil {

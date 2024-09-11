@@ -18,7 +18,6 @@ func Register(username, password, email string) error {
 		Username:     username,
 		PasswordHash: string(passwordHash),
 		Email:        email,
-		Status:       "offline",
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}

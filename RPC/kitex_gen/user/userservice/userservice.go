@@ -153,7 +153,7 @@ func newUserServiceLoginResult() interface{} {
 func getUserInfoHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*user.UserServiceGetUserInfoArgs)
 	realResult := result.(*user.UserServiceGetUserInfoResult)
-	success, err := handler.(user.UserService).GetUserInfo(ctx, realArg.Username)
+	success, err := handler.(user.UserService).GetUserInfo(ctx, realArg.Id)
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,7 @@ func newUserServiceGetUserInfoResult() interface{} {
 func setUserOnlineHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*user.UserServiceSetUserOnlineArgs)
 	realResult := result.(*user.UserServiceSetUserOnlineResult)
-	success, err := handler.(user.UserService).SetUserOnline(ctx, realArg.Username)
+	success, err := handler.(user.UserService).SetUserOnline(ctx, realArg.Id)
 	if err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func newUserServiceSetUserOnlineResult() interface{} {
 func setUserOfflineHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*user.UserServiceSetUserOfflineArgs)
 	realResult := result.(*user.UserServiceSetUserOfflineResult)
-	success, err := handler.(user.UserService).SetUserOffline(ctx, realArg.Username)
+	success, err := handler.(user.UserService).SetUserOffline(ctx, realArg.Id)
 	if err != nil {
 		return err
 	}
@@ -237,9 +237,9 @@ func (p *kClient) Login(ctx context.Context, username string, password string) (
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) GetUserInfo(ctx context.Context, username string) (r *user.User, err error) {
+func (p *kClient) GetUserInfo(ctx context.Context, id string) (r *user.User, err error) {
 	var _args user.UserServiceGetUserInfoArgs
-	_args.Username = username
+	_args.Id = id
 	var _result user.UserServiceGetUserInfoResult
 	if err = p.c.Call(ctx, "GetUserInfo", &_args, &_result); err != nil {
 		return
@@ -247,9 +247,9 @@ func (p *kClient) GetUserInfo(ctx context.Context, username string) (r *user.Use
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) SetUserOnline(ctx context.Context, username string) (r bool, err error) {
+func (p *kClient) SetUserOnline(ctx context.Context, id string) (r bool, err error) {
 	var _args user.UserServiceSetUserOnlineArgs
-	_args.Username = username
+	_args.Id = id
 	var _result user.UserServiceSetUserOnlineResult
 	if err = p.c.Call(ctx, "SetUserOnline", &_args, &_result); err != nil {
 		return
@@ -257,9 +257,9 @@ func (p *kClient) SetUserOnline(ctx context.Context, username string) (r bool, e
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) SetUserOffline(ctx context.Context, username string) (r bool, err error) {
+func (p *kClient) SetUserOffline(ctx context.Context, id string) (r bool, err error) {
 	var _args user.UserServiceSetUserOfflineArgs
-	_args.Username = username
+	_args.Id = id
 	var _result user.UserServiceSetUserOfflineResult
 	if err = p.c.Call(ctx, "SetUserOffline", &_args, &_result); err != nil {
 		return

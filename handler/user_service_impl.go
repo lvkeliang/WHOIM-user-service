@@ -36,35 +36,44 @@ func (s *UserServiceImpl) Login(ctx context.Context, username, password string) 
 }
 
 // 获取用户信息
-func (s *UserServiceImpl) GetUserInfo(ctx context.Context, username string) (*user.User, error) {
-	modelUser, err := models.GetUserByUsername(username)
+func (s *UserServiceImpl) GetUserInfo(ctx context.Context, id string) (*user.User, error) {
+	modelUser, err := models.GetUserByID(id)
 	if err != nil {
 		log.Println("Failed to get user info:", err)
 		return nil, err
 	}
 
-	// 将 models.User 转换为 user.User
+	// 获取用户状态
+	status, err := services.GetUserStatus(id)
+	if err != nil {
+		log.Println("Failed to get user status:", err)
+		return nil, err
+	}
+
+	// 将 models.User 转换为 user.User，并添加状态信息
 	return &user.User{
 		Id:       modelUser.ID.String(),
 		Username: modelUser.Username,
 		Email:    modelUser.Email,
-		Status:   modelUser.Status,
+		Status:   status,
 	}, nil
 }
 
 // 设置用户在线
-func (s *UserServiceImpl) SetUserOnline(ctx context.Context, username string) (bool, error) {
-	err := services.SetUserStatus(username, "online")
+func (s *UserServiceImpl) SetUserOnline(ctx context.Context, id string) (bool, error) {
+	err := services.SetUserStatus(id, "online")
 	if err != nil {
+		log.Println("Failed to set user online:", err)
 		return false, err
 	}
 	return true, nil
 }
 
 // 设置用户离线
-func (s *UserServiceImpl) SetUserOffline(ctx context.Context, username string) (bool, error) {
-	err := services.SetUserStatus(username, "offline")
+func (s *UserServiceImpl) SetUserOffline(ctx context.Context, id string) (bool, error) {
+	err := services.SetUserStatus(id, "offline")
 	if err != nil {
+		log.Println("Failed to set user offline:", err)
 		return false, err
 	}
 	return true, nil

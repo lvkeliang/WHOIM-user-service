@@ -13,9 +13,9 @@ import (
 type Client interface {
 	Register(ctx context.Context, username string, password string, email string, callOptions ...callopt.Option) (r bool, err error)
 	Login(ctx context.Context, username string, password string, callOptions ...callopt.Option) (r string, err error)
-	GetUserInfo(ctx context.Context, username string, callOptions ...callopt.Option) (r *user.User, err error)
-	SetUserOnline(ctx context.Context, username string, callOptions ...callopt.Option) (r bool, err error)
-	SetUserOffline(ctx context.Context, username string, callOptions ...callopt.Option) (r bool, err error)
+	GetUserInfo(ctx context.Context, id string, callOptions ...callopt.Option) (r *user.User, err error)
+	SetUserOnline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error)
+	SetUserOffline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -57,17 +57,17 @@ func (p *kUserServiceClient) Login(ctx context.Context, username string, passwor
 	return p.kClient.Login(ctx, username, password)
 }
 
-func (p *kUserServiceClient) GetUserInfo(ctx context.Context, username string, callOptions ...callopt.Option) (r *user.User, err error) {
+func (p *kUserServiceClient) GetUserInfo(ctx context.Context, id string, callOptions ...callopt.Option) (r *user.User, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.GetUserInfo(ctx, username)
+	return p.kClient.GetUserInfo(ctx, id)
 }
 
-func (p *kUserServiceClient) SetUserOnline(ctx context.Context, username string, callOptions ...callopt.Option) (r bool, err error) {
+func (p *kUserServiceClient) SetUserOnline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.SetUserOnline(ctx, username)
+	return p.kClient.SetUserOnline(ctx, id)
 }
 
-func (p *kUserServiceClient) SetUserOffline(ctx context.Context, username string, callOptions ...callopt.Option) (r bool, err error) {
+func (p *kUserServiceClient) SetUserOffline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.SetUserOffline(ctx, username)
+	return p.kClient.SetUserOffline(ctx, id)
 }
