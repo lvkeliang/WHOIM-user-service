@@ -14,6 +14,9 @@ service UserService {
     // 登录接口，传入用户名和密码，返回 JWT 令牌
     string Login(1: string username, 2: string password)
 
+    // 验证 JWT 令牌，返回用户信息
+    User ValidateToken(1: string token)
+
     // 获取用户信息，传入用户 ID (UUID)，返回用户信息
     User GetUserInfo(1: string id)
 

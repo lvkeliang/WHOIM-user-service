@@ -27,6 +27,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"ValidateToken": kitex.NewMethodInfo(
+		validateTokenHandler,
+		newUserServiceValidateTokenArgs,
+		newUserServiceValidateTokenResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 	"GetUserInfo": kitex.NewMethodInfo(
 		getUserInfoHandler,
 		newUserServiceGetUserInfoArgs,
@@ -157,6 +164,24 @@ func newUserServiceLoginResult() interface{} {
 	return user.NewUserServiceLoginResult()
 }
 
+func validateTokenHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*user.UserServiceValidateTokenArgs)
+	realResult := result.(*user.UserServiceValidateTokenResult)
+	success, err := handler.(user.UserService).ValidateToken(ctx, realArg.Token)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newUserServiceValidateTokenArgs() interface{} {
+	return user.NewUserServiceValidateTokenArgs()
+}
+
+func newUserServiceValidateTokenResult() interface{} {
+	return user.NewUserServiceValidateTokenResult()
+}
+
 func getUserInfoHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*user.UserServiceGetUserInfoArgs)
 	realResult := result.(*user.UserServiceGetUserInfoResult)
@@ -257,6 +282,16 @@ func (p *kClient) Login(ctx context.Context, username string, password string) (
 	_args.Password = password
 	var _result user.UserServiceLoginResult
 	if err = p.c.Call(ctx, "Login", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ValidateToken(ctx context.Context, token string) (r *user.User, err error) {
+	var _args user.UserServiceValidateTokenArgs
+	_args.Token = token
+	var _result user.UserServiceValidateTokenResult
+	if err = p.c.Call(ctx, "ValidateToken", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

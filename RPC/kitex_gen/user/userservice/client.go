@@ -13,6 +13,7 @@ import (
 type Client interface {
 	Register(ctx context.Context, username string, password string, email string, callOptions ...callopt.Option) (r bool, err error)
 	Login(ctx context.Context, username string, password string, callOptions ...callopt.Option) (r string, err error)
+	ValidateToken(ctx context.Context, token string, callOptions ...callopt.Option) (r *user.User, err error)
 	GetUserInfo(ctx context.Context, id string, callOptions ...callopt.Option) (r *user.User, err error)
 	SetUserOnline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error)
 	SetUserOffline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error)
@@ -56,6 +57,11 @@ func (p *kUserServiceClient) Register(ctx context.Context, username string, pass
 func (p *kUserServiceClient) Login(ctx context.Context, username string, password string, callOptions ...callopt.Option) (r string, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.Login(ctx, username, password)
+}
+
+func (p *kUserServiceClient) ValidateToken(ctx context.Context, token string, callOptions ...callopt.Option) (r *user.User, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.ValidateToken(ctx, token)
 }
 
 func (p *kUserServiceClient) GetUserInfo(ctx context.Context, id string, callOptions ...callopt.Option) (r *user.User, err error) {

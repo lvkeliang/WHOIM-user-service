@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+	"github.com/lvkeliang/WHOIM-user-service/RPC/kitex_gen/user"
 	"github.com/lvkeliang/WHOIM-user-service/models"
 	"log"
 )
@@ -34,4 +36,29 @@ func GetUserStatus(userID string) (string, error) {
 	}
 
 	return status, nil
+}
+
+// 获取用户信息
+func GetUserInfo(ctx context.Context, id string) (*user.User, error) {
+	// 获取用户基本信息
+	modelUser, err := models.GetUserByID(id)
+	if err != nil {
+		log.Println("Failed to get user info:", err)
+		return nil, err
+	}
+
+	// 获取用户状态
+	status, err := GetUserStatus(id)
+	if err != nil {
+		log.Println("Failed to get user status:", err)
+		return nil, err
+	}
+
+	// 将 models.User 转换为 user.User，并添加状态信息
+	return &user.User{
+		Id:       modelUser.ID.String(),
+		Username: modelUser.Username,
+		Email:    modelUser.Email,
+		Status:   status,
+	}, nil
 }

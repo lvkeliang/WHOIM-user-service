@@ -37,26 +37,13 @@ func (s *UserServiceImpl) Login(ctx context.Context, username, password string) 
 
 // 获取用户信息
 func (s *UserServiceImpl) GetUserInfo(ctx context.Context, id string) (*user.User, error) {
-	modelUser, err := models.GetUserByID(id)
+	user, err := services.GetUserInfo(ctx, id)
 	if err != nil {
 		log.Println("Failed to get user info:", err)
 		return nil, err
 	}
 
-	// 获取用户状态
-	status, err := services.GetUserStatus(id)
-	if err != nil {
-		log.Println("Failed to get user status:", err)
-		return nil, err
-	}
-
-	// 将 models.User 转换为 user.User，并添加状态信息
-	return &user.User{
-		Id:       modelUser.ID.String(),
-		Username: modelUser.Username,
-		Email:    modelUser.Email,
-		Status:   status,
-	}, nil
+	return user, nil
 }
 
 // 设置用户在线
@@ -89,4 +76,15 @@ func (s *UserServiceImpl) GetUserStatus(ctx context.Context, id string) (resp st
 	}
 
 	return status, nil
+}
+
+// ValidateToken 验证 JWT 令牌并直接从令牌中返回用户信息
+func (s *UserServiceImpl) ValidateToken(ctx context.Context, token string) (*user.User, error) {
+	user, err := services.ValidateToken(token)
+	if err != nil {
+		log.Println("Failed to validate token:", err)
+		return nil, err
+	}
+
+	return user, nil
 }
