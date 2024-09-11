@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"fmt"
 	"github.com/gocql/gocql"
 	"github.com/lvkeliang/WHOIM-user-service/db"
 	"github.com/lvkeliang/WHOIM-user-service/utils"
@@ -119,8 +118,6 @@ func GetUserStatus(userID string) (string, error) {
 		log.Println("Failed to convert userID:", err)
 		return "", err
 	}
-
-	fmt.Println("UUIDINT: ", idInt)
 
 	redisClient := db.GetRedisClient()
 

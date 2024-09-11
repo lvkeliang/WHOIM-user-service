@@ -48,6 +48,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"GetUserStatus": kitex.NewMethodInfo(
+		getUserStatusHandler,
+		newUserServiceGetUserStatusArgs,
+		newUserServiceGetUserStatusResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -204,6 +211,24 @@ func newUserServiceSetUserOfflineResult() interface{} {
 	return user.NewUserServiceSetUserOfflineResult()
 }
 
+func getUserStatusHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*user.UserServiceGetUserStatusArgs)
+	realResult := result.(*user.UserServiceGetUserStatusResult)
+	success, err := handler.(user.UserService).GetUserStatus(ctx, realArg.Id)
+	if err != nil {
+		return err
+	}
+	realResult.Success = &success
+	return nil
+}
+func newUserServiceGetUserStatusArgs() interface{} {
+	return user.NewUserServiceGetUserStatusArgs()
+}
+
+func newUserServiceGetUserStatusResult() interface{} {
+	return user.NewUserServiceGetUserStatusResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -262,6 +287,16 @@ func (p *kClient) SetUserOffline(ctx context.Context, id string) (r bool, err er
 	_args.Id = id
 	var _result user.UserServiceSetUserOfflineResult
 	if err = p.c.Call(ctx, "SetUserOffline", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetUserStatus(ctx context.Context, id string) (r string, err error) {
+	var _args user.UserServiceGetUserStatusArgs
+	_args.Id = id
+	var _result user.UserServiceGetUserStatusResult
+	if err = p.c.Call(ctx, "GetUserStatus", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

@@ -78,3 +78,15 @@ func (s *UserServiceImpl) SetUserOffline(ctx context.Context, id string) (bool, 
 	}
 	return true, nil
 }
+
+// GetUserStatus implements the UserServiceImpl interface.
+func (s *UserServiceImpl) GetUserStatus(ctx context.Context, id string) (resp string, err error) {
+	// 从 Redis 获取用户状态
+	status, err := models.GetUserStatus(id)
+	if err != nil {
+		log.Println("Failed to get user status:", err)
+		return "", err
+	}
+
+	return status, nil
+}

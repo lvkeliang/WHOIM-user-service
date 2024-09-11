@@ -22,4 +22,7 @@ service UserService {
 
     // 设置用户状态为离线，传入用户 ID (UUID)
     bool SetUserOffline(1: string id)
+
+    // 获取用户状态，传入用户 ID (UUID)，仅返回在线/离线状态
+    string GetUserStatus(1: string id)
 }

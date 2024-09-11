@@ -16,6 +16,7 @@ type Client interface {
 	GetUserInfo(ctx context.Context, id string, callOptions ...callopt.Option) (r *user.User, err error)
 	SetUserOnline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error)
 	SetUserOffline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error)
+	GetUserStatus(ctx context.Context, id string, callOptions ...callopt.Option) (r string, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -70,4 +71,9 @@ func (p *kUserServiceClient) SetUserOnline(ctx context.Context, id string, callO
 func (p *kUserServiceClient) SetUserOffline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.SetUserOffline(ctx, id)
+}
+
+func (p *kUserServiceClient) GetUserStatus(ctx context.Context, id string, callOptions ...callopt.Option) (r string, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetUserStatus(ctx, id)
 }
