@@ -15,9 +15,9 @@ type Client interface {
 	Login(ctx context.Context, username string, password string, callOptions ...callopt.Option) (r string, err error)
 	ValidateToken(ctx context.Context, token string, callOptions ...callopt.Option) (r *user.User, err error)
 	GetUserInfo(ctx context.Context, id string, callOptions ...callopt.Option) (r *user.User, err error)
-	SetUserOnline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error)
-	SetUserOffline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error)
-	GetUserStatus(ctx context.Context, id string, callOptions ...callopt.Option) (r string, err error)
+	SetUserOnline(ctx context.Context, id string, deviceID string, serverAddress string, callOptions ...callopt.Option) (r bool, err error)
+	SetUserOffline(ctx context.Context, id string, deviceID string, callOptions ...callopt.Option) (r bool, err error)
+	GetUserDevices(ctx context.Context, id string, callOptions ...callopt.Option) (r map[string]*user.UserStatus, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -69,17 +69,17 @@ func (p *kUserServiceClient) GetUserInfo(ctx context.Context, id string, callOpt
 	return p.kClient.GetUserInfo(ctx, id)
 }
 
-func (p *kUserServiceClient) SetUserOnline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error) {
+func (p *kUserServiceClient) SetUserOnline(ctx context.Context, id string, deviceID string, serverAddress string, callOptions ...callopt.Option) (r bool, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.SetUserOnline(ctx, id)
+	return p.kClient.SetUserOnline(ctx, id, deviceID, serverAddress)
 }
 
-func (p *kUserServiceClient) SetUserOffline(ctx context.Context, id string, callOptions ...callopt.Option) (r bool, err error) {
+func (p *kUserServiceClient) SetUserOffline(ctx context.Context, id string, deviceID string, callOptions ...callopt.Option) (r bool, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.SetUserOffline(ctx, id)
+	return p.kClient.SetUserOffline(ctx, id, deviceID)
 }
 
-func (p *kUserServiceClient) GetUserStatus(ctx context.Context, id string, callOptions ...callopt.Option) (r string, err error) {
+func (p *kUserServiceClient) GetUserDevices(ctx context.Context, id string, callOptions ...callopt.Option) (r map[string]*user.UserStatus, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.GetUserStatus(ctx, id)
+	return p.kClient.GetUserDevices(ctx, id)
 }

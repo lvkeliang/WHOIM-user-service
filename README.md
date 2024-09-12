@@ -6,6 +6,7 @@ kitex -module whotest -service UserService thrift/user.thrift
 
 go get github.com/kitex-contrib/registry-etcd
 
+------------------------
 
 docker exec -it cassandra cqlsh
 
@@ -18,9 +19,14 @@ id UUID PRIMARY KEY,
 username TEXT,
 password_hash TEXT,
 email TEXT,
-status TEXT,
 created_at TIMESTAMP,
 updated_at TIMESTAMP
 );
 
 CREATE INDEX ON users (username);
+
+------------------------
+
+HSET user:user123:devices device456 server1
+HSET device:device456 userID user123
+HSET device:device456 serverAddress server1

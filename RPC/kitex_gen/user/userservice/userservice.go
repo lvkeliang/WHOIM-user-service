@@ -55,10 +55,10 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
-	"GetUserStatus": kitex.NewMethodInfo(
-		getUserStatusHandler,
-		newUserServiceGetUserStatusArgs,
-		newUserServiceGetUserStatusResult,
+	"GetUserDevices": kitex.NewMethodInfo(
+		getUserDevicesHandler,
+		newUserServiceGetUserDevicesArgs,
+		newUserServiceGetUserDevicesResult,
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
@@ -203,7 +203,7 @@ func newUserServiceGetUserInfoResult() interface{} {
 func setUserOnlineHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*user.UserServiceSetUserOnlineArgs)
 	realResult := result.(*user.UserServiceSetUserOnlineResult)
-	success, err := handler.(user.UserService).SetUserOnline(ctx, realArg.Id)
+	success, err := handler.(user.UserService).SetUserOnline(ctx, realArg.Id, realArg.DeviceID, realArg.ServerAddress)
 	if err != nil {
 		return err
 	}
@@ -221,7 +221,7 @@ func newUserServiceSetUserOnlineResult() interface{} {
 func setUserOfflineHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*user.UserServiceSetUserOfflineArgs)
 	realResult := result.(*user.UserServiceSetUserOfflineResult)
-	success, err := handler.(user.UserService).SetUserOffline(ctx, realArg.Id)
+	success, err := handler.(user.UserService).SetUserOffline(ctx, realArg.Id, realArg.DeviceID)
 	if err != nil {
 		return err
 	}
@@ -236,22 +236,22 @@ func newUserServiceSetUserOfflineResult() interface{} {
 	return user.NewUserServiceSetUserOfflineResult()
 }
 
-func getUserStatusHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
-	realArg := arg.(*user.UserServiceGetUserStatusArgs)
-	realResult := result.(*user.UserServiceGetUserStatusResult)
-	success, err := handler.(user.UserService).GetUserStatus(ctx, realArg.Id)
+func getUserDevicesHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*user.UserServiceGetUserDevicesArgs)
+	realResult := result.(*user.UserServiceGetUserDevicesResult)
+	success, err := handler.(user.UserService).GetUserDevices(ctx, realArg.Id)
 	if err != nil {
 		return err
 	}
-	realResult.Success = &success
+	realResult.Success = success
 	return nil
 }
-func newUserServiceGetUserStatusArgs() interface{} {
-	return user.NewUserServiceGetUserStatusArgs()
+func newUserServiceGetUserDevicesArgs() interface{} {
+	return user.NewUserServiceGetUserDevicesArgs()
 }
 
-func newUserServiceGetUserStatusResult() interface{} {
-	return user.NewUserServiceGetUserStatusResult()
+func newUserServiceGetUserDevicesResult() interface{} {
+	return user.NewUserServiceGetUserDevicesResult()
 }
 
 type kClient struct {
@@ -307,9 +307,11 @@ func (p *kClient) GetUserInfo(ctx context.Context, id string) (r *user.User, err
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) SetUserOnline(ctx context.Context, id string) (r bool, err error) {
+func (p *kClient) SetUserOnline(ctx context.Context, id string, deviceID string, serverAddress string) (r bool, err error) {
 	var _args user.UserServiceSetUserOnlineArgs
 	_args.Id = id
+	_args.DeviceID = deviceID
+	_args.ServerAddress = serverAddress
 	var _result user.UserServiceSetUserOnlineResult
 	if err = p.c.Call(ctx, "SetUserOnline", &_args, &_result); err != nil {
 		return
@@ -317,9 +319,10 @@ func (p *kClient) SetUserOnline(ctx context.Context, id string) (r bool, err err
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) SetUserOffline(ctx context.Context, id string) (r bool, err error) {
+func (p *kClient) SetUserOffline(ctx context.Context, id string, deviceID string) (r bool, err error) {
 	var _args user.UserServiceSetUserOfflineArgs
 	_args.Id = id
+	_args.DeviceID = deviceID
 	var _result user.UserServiceSetUserOfflineResult
 	if err = p.c.Call(ctx, "SetUserOffline", &_args, &_result); err != nil {
 		return
@@ -327,11 +330,11 @@ func (p *kClient) SetUserOffline(ctx context.Context, id string) (r bool, err er
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) GetUserStatus(ctx context.Context, id string) (r string, err error) {
-	var _args user.UserServiceGetUserStatusArgs
+func (p *kClient) GetUserDevices(ctx context.Context, id string) (r map[string]*user.UserStatus, err error) {
+	var _args user.UserServiceGetUserDevicesArgs
 	_args.Id = id
-	var _result user.UserServiceGetUserStatusResult
-	if err = p.c.Call(ctx, "GetUserStatus", &_args, &_result); err != nil {
+	var _result user.UserServiceGetUserDevicesResult
+	if err = p.c.Call(ctx, "GetUserDevices", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

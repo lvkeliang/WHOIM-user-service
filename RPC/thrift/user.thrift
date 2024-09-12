@@ -3,8 +3,13 @@ namespace go user
 struct User {
     1: string id,
     2: string username,
-    3: string email,
-    4: string status
+    3: string email
+    4: map<string, UserStatus> status
+}
+
+struct UserStatus {
+    1: string deviceID,
+    2: string serverAddress
 }
 
 service UserService {
@@ -20,12 +25,12 @@ service UserService {
     // 获取用户信息，传入用户 ID (UUID)，返回用户信息
     User GetUserInfo(1: string id)
 
-    // 设置用户状态为在线，传入用户 ID (UUID)
-    bool SetUserOnline(1: string id)
+    // 设置用户设备在线，传入用户 ID (UUID)、设备 ID 和服务器地址
+    bool SetUserOnline(1: string id, 2: string deviceID, 3: string serverAddress)
 
-    // 设置用户状态为离线，传入用户 ID (UUID)
-    bool SetUserOffline(1: string id)
+    // 设置用户设备离线，传入用户 ID (UUID) 和设备 ID
+    bool SetUserOffline(1: string id, 2: string deviceID)
 
-    // 获取用户状态，传入用户 ID (UUID)，仅返回在线/离线状态
-    string GetUserStatus(1: string id)
+    // 获取用户的所有在线设备及其连接的服务器
+    map<string, UserStatus> GetUserDevices(1: string id)
 }

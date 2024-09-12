@@ -2,9 +2,9 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/gocql/gocql"
 	"github.com/lvkeliang/WHOIM-user-service/db"
-	"github.com/lvkeliang/WHOIM-user-service/utils"
 	"github.com/scylladb/gocqlx/v2/qb"
 	"github.com/scylladb/gocqlx/v2/table"
 	"log"
@@ -21,6 +21,13 @@ var userTable = table.Metadata{
 
 var users = table.New(userTable)
 
+// UserStatus 表示用户设备的连接状态
+type UserStatus struct {
+	DeviceID      string // 设备 ID
+	ServerAddress string // 设备连接的服务器地址
+}
+
+// User 表示用户信息
 type User struct {
 	ID           gocql.UUID
 	Username     string
@@ -35,27 +42,10 @@ func (u *User) Create() error {
 	session := db.GetSession()
 	stmt, names := qb.Insert(userTable.Name).Columns(userTable.Columns...).ToCql()
 
-	// 使用 gocqlx.Session.Query 代替 gocqlx.Query
 	queryx := session.Query(stmt, names).BindStruct(u)
 	defer queryx.Release()
 
 	return queryx.Exec()
-}
-
-func GetUserByUsername(username string) (*User, error) {
-	session := db.GetSession()
-	var user User
-	stmt, names := qb.Select(userTable.Name).Where(qb.Eq("username")).Limit(1).ToCql()
-
-	// 使用 gocqlx.Session.Query 代替 gocqlx.Query
-	queryx := session.Query(stmt, names).BindMap(qb.M{"username": username})
-	defer queryx.Release()
-
-	err := queryx.Get(&user)
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
 }
 
 // GetUserByID 根据用户ID获取用户信息
@@ -80,56 +70,88 @@ func GetUserByID(userID string) (*User, error) {
 	return &user, nil
 }
 
-// SetUserStatus 设置用户在线或离线状态，使用 Redis Bitmap
-func SetUserStatus(userID string, status string) error {
-	// 将 UUID 转换为整数，用于 Bitmap 的偏移量
-	idInt, err := utils.UUIDToInt(userID)
+// GetUserByUsername 根据用户名获取用户信息
+func GetUserByUsername(username string) (*User, error) {
+	session := db.GetSession()
+	var user User
+
+	stmt, names := qb.Select(userTable.Name).Where(qb.Eq("username")).Limit(1).ToCql()
+	queryx := session.Query(stmt, names).BindMap(qb.M{"username": username})
+	defer queryx.Release()
+
+	err := queryx.Get(&user)
 	if err != nil {
-		log.Println("Failed to convert userID:", err)
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// SetUserDeviceOnline 设置用户设备在线状态，记录设备连接的服务器
+func SetUserDeviceOnline(userID, deviceID, serverAddress string) error {
+	redisClient := db.GetRedisClient()
+
+	userStatus := UserStatus{
+		DeviceID:      deviceID,
+		ServerAddress: serverAddress,
+	}
+
+	// 手动编码为 JSON 字符串
+	statusJSON, err := json.Marshal(userStatus)
+	if err != nil {
+		log.Println("Failed to marshal user status:", err)
 		return err
 	}
 
-	redisClient := db.GetRedisClient()
-
-	// 设置用户的在线/离线状态到 Redis Bitmap
-	if status == "online" {
-		err = redisClient.SetBit(ctx, "user:status", idInt, 1).Err()
-		if err != nil {
-			log.Println("Failed to set user online status in Redis:", err)
-			return err
-		}
-	} else {
-		err = redisClient.SetBit(ctx, "user:status", idInt, 0).Err()
-		if err != nil {
-			log.Println("Failed to set user offline status in Redis:", err)
-			return err
-		}
+	// 存储用户的设备与服务器信息到 Redis，使用 Redis 哈希表
+	err = redisClient.HSet(ctx, "user:"+userID+":devices", deviceID, statusJSON).Err()
+	if err != nil {
+		log.Println("Failed to set user device online:", err)
+		return err
 	}
 
-	log.Printf("User %s status set to %s", userID, status)
+	log.Printf("User %s's device %s connected to server %s", userID, deviceID, serverAddress)
 	return nil
 }
 
-// GetUserStatus 从 Redis 获取用户在线状态
-func GetUserStatus(userID string) (string, error) {
-	// 将 UUID 转换为整数
-	idInt, err := utils.UUIDToInt(userID)
-	if err != nil {
-		log.Println("Failed to convert userID:", err)
-		return "", err
-	}
-
+// GetUserDevices 获取用户所有在线设备及其连接的服务器
+func GetUserDevices(userID string) (map[string]UserStatus, error) {
 	redisClient := db.GetRedisClient()
 
-	// 从 Redis Bitmap 中获取用户的在线状态
-	status, err := redisClient.GetBit(ctx, "user:status", idInt).Result()
+	// 获取用户的所有设备与服务器连接信息
+	devicesMap, err := redisClient.HGetAll(ctx, "user:"+userID+":devices").Result()
 	if err != nil {
-		log.Println("Failed to get user status from Redis:", err)
-		return "", err
+		log.Println("Failed to get user devices:", err)
+		return nil, err
 	}
 
-	if status == 1 {
-		return "online", nil
+	// 将获取的结果转换为 UserStatus 类型的映射
+	devices := make(map[string]UserStatus)
+	for deviceID, data := range devicesMap {
+		var status UserStatus
+		// 手动解码 JSON 字符串为 UserStatus
+		err = json.Unmarshal([]byte(data), &status)
+		if err != nil {
+			log.Println("Failed to unmarshal user device status:", err)
+			return nil, err
+		}
+		devices[deviceID] = status
 	}
-	return "offline", nil
+
+	return devices, nil
+}
+
+// RemoveUserDevice 设置用户设备离线状态
+func RemoveUserDevice(userID, deviceID string) error {
+	redisClient := db.GetRedisClient()
+
+	// 移除设备的在线状态
+	err := redisClient.HDel(ctx, "user:"+userID+":devices", deviceID).Err()
+	if err != nil {
+		log.Println("Failed to remove user device:", err)
+		return err
+	}
+
+	log.Printf("User %s's device %s disconnected", userID, deviceID)
+	return nil
 }

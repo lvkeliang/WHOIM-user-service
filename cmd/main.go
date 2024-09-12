@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// 实例化 UserService 实现
-	svc := handler.NewUserServiceImpl()
+	svc := new(handler.UserServiceImpl)
 
 	// 使用 net.ResolveTCPAddr 来创建监听地址
 	addr, err := net.ResolveTCPAddr("tcp", "127.0.0.1:8890")

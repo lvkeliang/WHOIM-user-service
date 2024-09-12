@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"github.com/lvkeliang/WHOIM-user-service/RPC/kitex_gen/user"
-	"github.com/lvkeliang/WHOIM-user-service/models"
 	"github.com/lvkeliang/WHOIM-user-service/services"
 	"log"
 )
@@ -35,20 +34,29 @@ func (s *UserServiceImpl) Login(ctx context.Context, username, password string) 
 	return token, nil
 }
 
+// 验证 JWT 令牌
+func (s *UserServiceImpl) ValidateToken(ctx context.Context, token string) (*user.User, error) {
+	user, err := services.ValidateToken(token)
+	if err != nil {
+		log.Println("Failed to validate token:", err)
+		return nil, err
+	}
+	return user, nil
+}
+
 // 获取用户信息
 func (s *UserServiceImpl) GetUserInfo(ctx context.Context, id string) (*user.User, error) {
-	user, err := services.GetUserInfo(ctx, id)
+	userInfo, err := services.GetUserInfo(ctx, id)
 	if err != nil {
 		log.Println("Failed to get user info:", err)
 		return nil, err
 	}
-
-	return user, nil
+	return userInfo, nil
 }
 
-// 设置用户在线
-func (s *UserServiceImpl) SetUserOnline(ctx context.Context, id string) (bool, error) {
-	err := services.SetUserStatus(id, "online")
+// 设置用户设备在线
+func (s *UserServiceImpl) SetUserOnline(ctx context.Context, id string, deviceID string, serverAddress string) (bool, error) {
+	err := services.SetUserStatus(id, deviceID, serverAddress, "online")
 	if err != nil {
 		log.Println("Failed to set user online:", err)
 		return false, err
@@ -56,9 +64,9 @@ func (s *UserServiceImpl) SetUserOnline(ctx context.Context, id string) (bool, e
 	return true, nil
 }
 
-// 设置用户离线
-func (s *UserServiceImpl) SetUserOffline(ctx context.Context, id string) (bool, error) {
-	err := services.SetUserStatus(id, "offline")
+// 设置用户设备离线
+func (s *UserServiceImpl) SetUserOffline(ctx context.Context, id string, deviceID string) (bool, error) {
+	err := services.SetUserStatus(id, deviceID, "", "offline")
 	if err != nil {
 		log.Println("Failed to set user offline:", err)
 		return false, err
@@ -66,25 +74,23 @@ func (s *UserServiceImpl) SetUserOffline(ctx context.Context, id string) (bool, 
 	return true, nil
 }
 
-// GetUserStatus implements the UserServiceImpl interface.
-func (s *UserServiceImpl) GetUserStatus(ctx context.Context, id string) (resp string, err error) {
-	// 从 Redis 获取用户状态
-	status, err := models.GetUserStatus(id)
+// GetUserDevices 获取用户设备在线状态
+func (s *UserServiceImpl) GetUserDevices(ctx context.Context, id string) (map[string]*user.UserStatus, error) {
+	// 调用 services 层获取设备状态
+	devices, err := services.GetUserStatus(id)
 	if err != nil {
-		log.Println("Failed to get user status:", err)
-		return "", err
-	}
-
-	return status, nil
-}
-
-// ValidateToken 验证 JWT 令牌并直接从令牌中返回用户信息
-func (s *UserServiceImpl) ValidateToken(ctx context.Context, token string) (*user.User, error) {
-	user, err := services.ValidateToken(token)
-	if err != nil {
-		log.Println("Failed to validate token:", err)
+		log.Println("Failed to get user devices:", err)
 		return nil, err
 	}
 
-	return user, nil
+	// 将 map[string]models.UserStatus 转换为 map[string]*user.UserStatus
+	thriftDeviceStatuses := make(map[string]*user.UserStatus)
+	for deviceID, deviceStatus := range devices {
+		thriftDeviceStatuses[deviceID] = &user.UserStatus{
+			DeviceID:      deviceStatus.DeviceID,
+			ServerAddress: deviceStatus.ServerAddress,
+		}
+	}
+
+	return thriftDeviceStatuses, nil
 }
